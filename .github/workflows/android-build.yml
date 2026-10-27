@@ -62,7 +62,9 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: python3 android/smoke.py
+          script: |
+            gradle -p android connectedDebugAndroidTest --stacktrace
+            python3 android/smoke.py
       - name: Package APK and checksums
         if: github.event_name == 'workflow_dispatch' && inputs.package_release
         env:
