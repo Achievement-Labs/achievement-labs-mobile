@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="Achievement Labs Mobile — Your Xbox library, wherever you play." width="100%">
+  <img src="docs/assets/banner.svg" alt="Achievement Labs Mobile — Achievement tools. Wherever you play." width="100%">
 </p>
 
 <h1 align="center">Achievement Labs Mobile</h1>
 
-<p align="center">Explore your Xbox library, manage Game Sessions, and work with exported Xbox 360 profiles on Android, iPhone, and iPad.</p>
+<p align="center">Achievement, progress, and profile tools for Android, iPhone, and iPad.</p>
 
 <p align="center">
   <a href="android/README.md"><img src="https://img.shields.io/badge/Android-Beta-83e6ad?style=flat-square" alt="Android beta guide"></a>
@@ -37,7 +37,7 @@ Bring Achievement Labs to your phone. Browse games and achievement progress, pre
 | **Xbox library** | Search and sort games, inspect achievement progress, and spot completed titles. |
 | **Game Session** | Manage title presence and Auto Unlock with explicit start/stop controls, saved queues, and editable delays. |
 | **Xbox 360 profiles** | Import a supported exported profile, edit selected achievements and timestamps, keep a backup, and export a signed working copy. Console/USB copying is a separate step. |
-| **Microsoft sign-in and PC sync** | Connect through the supported sign-in flow or use the desktop transfer options described in each platform guide. |
+| **Microsoft sign-in** | Connect through the supported sign-in flow described in each platform guide. |
 | **Event data** | Receive supported additions from the official public event feed. Coverage and edition restrictions vary by title. |
 | **Appearance and session controls** | Customize the interface and choose the session options available on your platform. Background execution depends on Android or iOS. |
 
@@ -47,7 +47,6 @@ Bring Achievement Labs to your phone. Browse games and achievement progress, pre
 | --- | --- | --- |
 | **Android** | Standalone beta; build instructions and CI checks | [Android build and usage](android/README.md) |
 | **iPhone / iPad** | Standalone beta; iOS/iPadOS 17+; device builds require signing | [iOS build and usage](mobile/README.md) |
-| **Desktop** | Windows release, with separate Mac and Linux previews | [Achievement Labs Desktop](https://github.com/Achievement-Labs/achievement-labs) |
 
 **This repository has no published installer releases yet.** Check the platform guides and [build workflows](https://github.com/Achievement-Labs/achievement-labs-mobile/actions) for development builds. An unsigned IPA needs your own signing/sideloading setup; an App Store or TestFlight release is not currently offered. Existing installed mobile versions keep their previous update endpoint until a migration release is provided.
 
@@ -73,12 +72,12 @@ Android uses Java/WebView; iOS uses Swift/SwiftUI. The shared offline Xbox 360 e
 | `catalog/` | Title data |
 | `assets/` | Shared app icon |
 
-Run `python mobile/tools/prepare_catalogue.py` before either build. No desktop checkout is needed. The existing pinned `prepare_360.py` download is still required for the approved shared signing resource. Follow the full [Android](android/README.md) or [iOS](mobile/README.md) instructions for remaining dependencies and signing requirements.
+Run `python mobile/tools/prepare_catalogue.py` before either build. The existing pinned `prepare_360.py` download is still required for the approved shared signing resource. Follow the full [Android](android/README.md) or [iOS](mobile/README.md) instructions for remaining dependencies and signing requirements.
 
-App update checks target this repository. Event-data checks continue to target [Achievement-Labs/achievement-labs](https://github.com/Achievement-Labs/achievement-labs). See [migration and pending contributions](docs/repository-split.md) for source provenance and release continuity.
+App update checks target this repository. Event data comes from the official public event feed. See [migration and pending contributions](docs/repository-split.md) for source provenance and release continuity.
 
 </details>
 
 ## Credits
 
-Source and contributor history remain in [Achievement-Labs/achievement-labs](https://github.com/Achievement-Labs/achievement-labs). This extraction preserves existing attribution; it does not relicense the contributed source.
+See the [project history and migration notes](docs/repository-split.md) for source provenance and contributor history. Existing attribution and licensing of contributed source are retained.
