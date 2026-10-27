@@ -57,7 +57,12 @@ final class CoreTests: XCTestCase {
         let report = try JSON.object(Data(contentsOf:URL(fileURLWithPath:path).appendingPathComponent("catalogue-report.json")))
         XCTAssertEqual(c.index.count,(report["sourceTitleBlocks"] as? Int) ?? -1)
         XCTAssertGreaterThan(c.index.count,400)
-        for title in ["345903534","796798669","125965001","2154930","1766089184","515050978"] { XCTAssertNotNil(c.index[title]?.reason); XCTAssertThrowsError(try c.recipes(title)) }
+        for title in ["345903534","796798669","125965001","2154930"] { XCTAssertNotNil(c.index[title]?.reason); XCTAssertThrowsError(try c.recipes(title)) }
+        // These titles are explicitly enabled in the extracted upstream snapshot.
+        for (title, expected) in [("1766089184", 49), ("515050978", 200)] {
+            XCTAssertNil(c.index[title]?.reason)
+            XCTAssertEqual(try c.recipes(title).recipes.count, expected)
+        }
         XCTAssertNotNil(c.index["1100121502"])
         var count = 0
         for (title,status) in c.index where status.reason == nil {
