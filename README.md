@@ -4,7 +4,7 @@
 
 <h1 align="center">Achievement Labs Mobile</h1>
 
-<p align="center">Achievement, progress, and profile tools for Android, iPhone, and iPad.</p>
+<p align="center">Free, open-source achievement, progress, and profile tools for Android, iPhone, and iPad.</p>
 
 <p align="center">
   <a href="android/README.md"><img src="https://img.shields.io/badge/Android-Beta-83e6ad?style=flat-square" alt="Android beta guide"></a>
