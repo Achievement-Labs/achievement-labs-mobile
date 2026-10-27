@@ -4,6 +4,12 @@ on:
     branches: [main]
     paths: [android/**, mobile/**, catalog-source/**, catalog/**, assets/**, .github/workflows/**]
   workflow_dispatch:
+    inputs:
+      package_release:
+        description: 'Sign a distributable APK using the existing permanent release key'
+        type: boolean
+        default: false
+        required: false
 permissions:
   contents: read
 concurrency:
@@ -58,7 +64,7 @@ jobs:
           disable-animations: true
           script: python3 android/smoke.py
       - name: Package APK and checksums
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.package_release
         env:
           LABS_ANDROID_KEYSTORE_BASE64: ${{ secrets.LABS_ANDROID_KEYSTORE_BASE64 }}
           LABS_ANDROID_KEY_ALIAS: ${{ secrets.LABS_ANDROID_KEY_ALIAS }}
@@ -88,7 +94,7 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.package_release
         with:
           name: AchievementLabs-Android-Beta
           path: android/artifacts/
