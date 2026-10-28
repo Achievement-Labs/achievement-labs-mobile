@@ -37,6 +37,7 @@ jobs:
           gradle-version: '8.11.1'
       - name: Prepare the shared deterministic mobile catalogue and Android icon
         run: |
+          python3 mobile/tools/test_edition_catalogue.py
           python3 mobile/tools/prepare_catalogue.py
           python3 mobile/tools/prepare_360.py
           node mobile/Shared360/core-checks.cjs
