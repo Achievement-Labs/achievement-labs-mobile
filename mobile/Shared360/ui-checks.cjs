@@ -1,6 +1,7 @@
 // Exercise the shipped UI/bridge protocol with a synthetic profile, without a file picker/network.
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict'),crypto=require('node:crypto');
-const core=require('./profile-core.js'),{fixture}=require('./core-checks.cjs');
+const core=require('./profile-core.js'),{fixture,gpd,text,achievement,sync}=require('./core-checks.cjs');
+const catalogGpd=gpd([[1,5,achievement(5,'Catalog one',50)],[5,0x8000,text('Catalog title')],[1,0x100000000n,sync([5])],[1,0x200000000n,Buffer.from([0,0,0,0,0,0,0,1])]]);let fetched=null,contributed=null;
 const {file,identity}=fixture(),original=Buffer.from(file);let working=Buffer.from(file),pending=null,expected=null,passed=false;
 const nodes={};for(const match of fs.readFileSync(__dirname+'/index.html','utf8').matchAll(/<(\w+)[^>]*\bid="([^"]+)"/g))nodes[match[2]]={tagName:match[1],value:'',textContent:'',innerHTML:'',hidden:false,disabled:false,checked:false,prepend(){}};
 for(const [id,value] of Object.entries({filter:'locked',sort:'id',gameSort:'az',mode:'offline',spacing:'1'}))nodes[id].value=value;
@@ -16,8 +17,18 @@ context.window.Labs360Native={call(id,action,json){Promise.resolve().then(async(
  case 'saveChunk':assert.equal(p.offset,pending.length);pending=Buffer.concat([pending,Buffer.from(p.base64,'base64')]);break;
  case 'commitSave':assert.equal(pending.length,expected.length);assert.equal(hash(pending),expected.sha1);working=pending;pending=null;break;
  case 'abortSave':pending=null;break;
+ case 'gpdIndex':result={titles:{ABCD0001:{name:'Catalog title',achievements:1,gamerscore:50,bytes:catalogGpd.length,sha256:'x'}},contribute:true};break;
+ case 'gpdFetch':assert.equal(p.titleId,'ABCD0001');fetched=catalogGpd;result={length:fetched.length};break;
+ case 'gpdChunk':result={base64:fetched.subarray(p.offset,p.offset+32768).toString('base64')};break;
+ case 'contributeBegin':contributed={meta:p,data:Buffer.alloc(0)};break;
+ case 'contributeChunk':contributed.data=Buffer.concat([contributed.data,Buffer.from(p.base64,'base64')]);break;
+ case 'contributeCommit':assert.equal(hash(contributed.data),contributed.meta.sha1);break;
  case 'testDone':assert.equal(p.passed,true,p.error);assert.deepEqual(original,file);assert.notDeepEqual(original,working);assert.equal((await core.Profile.open(working)).list('00000001')[0].unlocked,true);passed=true;break;
  default:throw Error('Unexpected bridge action '+action);
  }context.window.native360Result(id,result,null);}).catch(e=>context.window.native360Result(id,null,e.message));}};
 vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/ui.js','utf8'),context);
-(async()=>{await context.window.mobile360SelfTest();assert.equal(passed,true,nodes.status.textContent);assert.match(nodes.status.textContent,/passed/);assert.equal(nodes.export.disabled,false);assert.match(nodes.achievements.innerHTML,/Second/);console.log('PASS: shipped 360 UI performs synthetic import, selection, unlock, signed chunk transfer and native commit; no second file picker or network.');})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{await context.window.mobile360SelfTest();assert.equal(passed,true,nodes.status.textContent);assert.match(nodes.status.textContent,/passed/);assert.equal(nodes.export.disabled,false);assert.match(nodes.achievements.innerHTML,/Second/);
+ const settle=async()=>{for(let i=0;i<400&&nodes.import.disabled;i++)await new Promise(r=>setTimeout(r,5));};
+ nodes.catalogLoad.onclick();await settle();assert.match(nodes.catalog.innerHTML,/Catalog title/);assert.match(nodes.status.textContent,/1 catalog titles/);
+ nodes.catalog.onclick({target:{closest:()=>({dataset:{add:'ABCD0001'}})}});await settle();assert.match(nodes.status.textContent,/Added Catalog title/,nodes.status.textContent);const after=await core.Profile.open(working);assert.deepEqual(after.pending(),['ABCD0001']);assert.equal(core.Gpd.inspect(after.package.read('ABCD0001.gpd')).unlocked,0);assert.match(nodes.pendingStatus.textContent,/ABCD0001/);assert.match(nodes.catalog.innerHTML,/In profile/);
+ assert.equal(nodes.contribute.hidden,false);nodes.contribute.onclick();await settle();assert.deepEqual(contributed.data,Buffer.from(core.Gpd.template(after.package.read('00000001.gpd'))));console.log('PASS: shipped 360 UI performs synthetic import, selection, unlock, signed chunk transfer and native commit; no second file picker or network; catalog add-game and contribution export over the bridge.');})().catch(e=>{console.error(e);process.exitCode=1;});
