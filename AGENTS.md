@@ -19,4 +19,4 @@
 
 Android and iOS app updates come from `Achievement-Labs/achievement-labs-mobile`. Event JSON and the public mobile event feed remain at `Achievement-Labs/achievement-labs`. Never point an official build's update feed at a fork. The catalog-source snapshot is copied without payload changes from the desktop repository; record provenance outside Data.json.
 
-The user authorized bundling the reusable Horizon-sourced CON identity after the complete 556-byte build record was verified to match Horizon, provided no personal profile or sign-in data is included. Keep raw build inputs, personal profiles, custom keyvaults and account secrets excluded from Git/releases, and never print signing values.
+Keep raw build inputs, personal profiles, custom keyvaults and account secrets excluded from Git/releases, and never print signing values.
