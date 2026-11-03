@@ -1,9 +1,9 @@
 package org.achievementlabs.mobile;
 import org.json.*;import java.io.*;import java.nio.file.*;import java.security.*;import java.util.*;
 
-// Public, download-only Xbox 360 GPD catalog. Every GPD must match the size and SHA-256 in the index.
+// Public, download-only Xbox 360 GPD catalog (assets of the gpd-catalog prerelease). Every GPD must match the size and SHA-256 in the index.
 final class Gpd360Catalog {
- static final String BASE="https://raw.githubusercontent.com/Achievement-Labs/achievement-labs/gpd-catalog/";
+ static final String BASE="https://github.com/Achievement-Labs/achievement-labs/releases/download/gpd-catalog/";
  static final String ISSUE="https://github.com/Achievement-Labs/achievement-labs/issues/new?template=gpd-contribution.yml&title=";
  static final int INDEX_LIMIT=4*1024*1024, GPD_LIMIT=8*1024*1024;
  final File cache;JSONObject titles;
@@ -15,5 +15,5 @@ final class Gpd360Catalog {
   return clean;}
  // Falls back to the last verified index when offline.
  synchronized JSONObject index()throws Exception{byte[] bytes;try{bytes=Net.bytes(BASE+"index.json",INDEX_LIMIT);titles=parse(bytes);cache.getParentFile().mkdirs();Profile360Store.atomic(cache,bytes);}catch(Exception error){if(!cache.isFile())throw new Exception("The GPD catalog is unavailable: "+error.getMessage());titles=parse(Files.readAllBytes(cache.toPath()));}return titles;}
- synchronized byte[] fetch(String id)throws Exception{if(titles==null)index();if(!titleId(id)||!titles.has(id))throw new Exception("That title is not in the GPD catalog.");JSONObject t=titles.getJSONObject(id);byte[] data=Net.bytes(BASE+"gpd/"+id+".gpd",GPD_LIMIT);if(data.length!=t.getInt("bytes")||!sha256(data).equals(t.getString("sha256")))throw new Exception("The downloaded GPD did not match the catalog checksum.");return data;}
+ synchronized byte[] fetch(String id)throws Exception{if(titles==null)index();if(!titleId(id)||!titles.has(id))throw new Exception("That title is not in the GPD catalog.");JSONObject t=titles.getJSONObject(id);byte[] data=Net.bytes(BASE+id+".gpd",GPD_LIMIT);if(data.length!=t.getInt("bytes")||!sha256(data).equals(t.getString("sha256")))throw new Exception("The downloaded GPD did not match the catalog checksum.");return data;}
 }

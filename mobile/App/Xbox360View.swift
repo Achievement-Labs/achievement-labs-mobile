@@ -38,8 +38,8 @@ private struct Xbox360WebView: UIViewRepresentable {
         var expected = 0, digest = "", directory: URL?
         var pickerID: String?, pickerAction = ""
         var appearanceReady=false, lastAppearance=""
-        // Public, download-only GPD catalog; every file must match the index size and SHA-256.
-        static let catalogBase = "https://raw.githubusercontent.com/Achievement-Labs/achievement-labs/gpd-catalog/"
+        // Public, download-only GPD catalog (assets of the gpd-catalog prerelease); every file must match the index size and SHA-256.
+        static let catalogBase = "https://github.com/Achievement-Labs/achievement-labs/releases/download/gpd-catalog/"
         static let issueURL = "https://github.com/Achievement-Labs/achievement-labs/issues/new?template=gpd-contribution.yml&title="
         var catalog:[String:[String:Any]]?, gpd = Data(), contribution:Data?, contributionTitle = "", contributionLength = 0, contributionHash = ""
         func sha256(_ data:Data) -> String { SHA256.hash(data:data).map { String(format:"%02x",$0) }.joined() }
@@ -48,7 +48,8 @@ private struct Xbox360WebView: UIViewRepresentable {
             var request = URLRequest(url:URL(string:Self.catalogBase+path)!); request.timeoutInterval = 60; request.cachePolicy = .reloadIgnoringLocalCacheData
             request.setValue("AchievementLabs-Mobile/0.3",forHTTPHeaderField:"User-Agent")
             let (data,response) = try await URLSession.shared.data(for:request)
-            guard let http = response as? HTTPURLResponse,(200...299).contains(http.statusCode),data.count <= limit else { throw fail("The GPD catalog is unavailable (HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)).") }
+            guard let http = response as? HTTPURLResponse,(200...299).contains(http.statusCode),data.count <= limit,
+                  ["github.com","release-assets.githubusercontent.com","objects.githubusercontent.com"].contains(http.url?.host ?? "") else { throw fail("The GPD catalog is unavailable (HTTP \((response as? HTTPURLResponse)?.statusCode ?? 0)).") }
             return data
         }
         func parseCatalog(_ data:Data) throws -> [String:[String:Any]] {
@@ -175,7 +176,7 @@ private struct Xbox360WebView: UIViewRepresentable {
                 return ["titles":catalog ?? [:],"contribute":model.gpdContribute]
             case "gpdFetch":
                 guard let title = p["titleId"] as? String,validTitle(title),let entry = catalog?[title],let size = entry["bytes"] as? Int,let expected = entry["sha256"] as? String else { throw fail("That title is not in the GPD catalog.") }
-                let data = try await download("gpd/\(title).gpd",limit:8*1024*1024)
+                let data = try await download("\(title).gpd",limit:8*1024*1024)
                 guard data.count == size,sha256(data) == expected else { throw fail("The downloaded GPD did not match the catalog checksum.") }
                 gpd = data; return ["length":data.count]
             case "gpdChunk":

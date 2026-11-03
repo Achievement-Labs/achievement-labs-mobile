@@ -6,7 +6,16 @@ import java.util.*;
 public final class Net {
  static final class HttpFailure extends Exception { final int status; HttpFailure(int code,String message){super(message);status=code;} }
  static String read(String url,String method,String authorization,String version,String body,Map<String,String> extra,int limit)throws Exception{return Core.text(raw(url,method,authorization,version,body,extra,limit));}
- static byte[] bytes(String url,int limit)throws Exception{if(!url.startsWith("https://raw.githubusercontent.com/"))throw new Exception("Endpoint is not allowed.");return raw(url,"GET",null,null,null,null,limit);}
+ // Public GitHub release assets: github.com redirects to a signed githubusercontent.com URL; every hop is checked.
+ static final String RELEASE_ASSETS="https://github.com/Achievement-Labs/achievement-labs/releases/download/";
+ static boolean releaseHost(URL u){String h=u.getHost();return u.getProtocol().equals("https")&&u.getUserInfo()==null&&(h.equals("release-assets.githubusercontent.com")||h.equals("objects.githubusercontent.com"));}
+ static byte[] bytes(String url,int limit)throws Exception{if(!url.startsWith(RELEASE_ASSETS))throw new Exception("Endpoint is not allowed.");URL target=new URL(url);
+  for(int hop=0;hop<5;hop++){if(hop>0&&!releaseHost(target))throw new Exception("Endpoint is not allowed.");HttpURLConnection c=(HttpURLConnection)target.openConnection();c.setInstanceFollowRedirects(false);c.setConnectTimeout(45000);c.setReadTimeout(45000);c.setRequestProperty("Accept","application/octet-stream");c.setRequestProperty("User-Agent","AchievementLabs-Android/0.1");
+   try{int code=c.getResponseCode();if(code==301||code==302||code==303||code==307||code==308){String next=c.getHeaderField("Location");if(next==null)throw new Exception("Redirect without location.");target=new URL(target,next);continue;}
+    if(code<200||code>=300)throw new HttpFailure(code,"HTTP "+code+" · "+target.getHost());
+    try(InputStream in=c.getInputStream();ByteArrayOutputStream out=new ByteArrayOutputStream()){byte[] b=new byte[16384];int k;while((k=in.read(b))!=-1){if(out.size()+k>limit)throw new Exception("Response exceeds size limit.");out.write(b,0,k);}return out.toByteArray();}
+   }finally{c.disconnect();}}
+  throw new Exception("Too many redirects.");}
  static byte[] raw(String url,String method,String authorization,String version,String body,Map<String,String> extra,int limit)throws Exception{
   URL target=new URL(url);String host=target.getHost();if(!target.getProtocol().equals("https")||target.getUserInfo()!=null)throw new Exception("Invalid secure endpoint.");
   boolean xbox=host.endsWith(".xboxlive.com"),events=host.equals("v20.events.data.microsoft.com"),login=host.equals("login.live.com"),publicData=host.equals("displaycatalog.mp.microsoft.com")||host.equals("raw.githubusercontent.com")||host.equals("api.github.com")||(host.equals("dbox.tools")&&target.getPath().equals("/api/title_ids/"));
