@@ -33,6 +33,7 @@ final class NotificationPresentation: NSObject, UNUserNotificationCenterDelegate
     @Published var error: String?
     @AppStorage("queueDelay") var queueDelay = 60.0
     @AppStorage("stopOnFailure") var stopOnFailure = true
+    @AppStorage("gpdContribute") var gpdContribute = false
     @AppStorage("stopOnPresenceFailure") var stopOnPresenceFailure = true
     @AppStorage("notifyCompletion") var notifyCompletion = true
     @AppStorage("notifyUnlockFailure") var notifyUnlockFailure = true

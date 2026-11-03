@@ -33,6 +33,7 @@ struct SyncSettings: View {
             Section("App updates") {
                 Toggle("Check for updates on opening",isOn:$m.checkMobileUpdates)
                 Toggle("Notify about new versions",isOn:$m.notifyMobileUpdates).onChange(of:m.notifyMobileUpdates) { _,enabled in if enabled { Task { await m.requestNotifications() } } }
+                Toggle("Offer to export missing Xbox 360 GPDs for the public catalog",isOn:$m.gpdContribute)
                 Button("Check for updates now") { Task { await m.checkForMobileUpdates() } }.disabled(m.updateChecking)
                 Text(m.updateStatus).font(.caption).foregroundStyle(.secondary)
                 if let update = m.availableUpdate { Link("Open iOS " + update.version + " download",destination:update.page) }
