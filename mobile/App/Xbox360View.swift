@@ -38,8 +38,8 @@ private struct Xbox360WebView: UIViewRepresentable {
         var expected = 0, digest = "", directory: URL?
         var pickerID: String?, pickerAction = ""
         var appearanceReady=false, lastAppearance=""
-        // Public, download-only GPD catalog (assets of the gpd-catalog prerelease); every file must match the index size and SHA-256.
-        static let catalogBase = "https://github.com/Achievement-Labs/achievement-labs/releases/download/gpd-catalog/"
+        // Public, download-only GPD catalog (index in the gpd-catalog prerelease, GPDs in gpd-catalog-N); every file must match the index size and SHA-256.
+        static let catalogBase = "https://github.com/Achievement-Labs/achievement-labs/releases/download/"
         static let issueURL = "https://github.com/Achievement-Labs/achievement-labs/issues/new?template=gpd-contribution.yml&title="
         var catalog:[String:[String:Any]]?, gpd = Data(), contribution:Data?, contributionTitle = "", contributionLength = 0, contributionHash = ""
         func sha256(_ data:Data) -> String { SHA256.hash(data:data).map { String(format:"%02x",$0) }.joined() }
@@ -56,8 +56,9 @@ private struct Xbox360WebView: UIViewRepresentable {
             guard let root = try JSONSerialization.jsonObject(with:data) as? [String:Any],root["version"] as? Int == 1,let titles = root["titles"] as? [String:[String:Any]] else { throw fail("Unsupported GPD catalog.") }
             var clean:[String:[String:Any]] = [:]
             for (id,t) in titles {
-                guard validTitle(id),let size = t["bytes"] as? Int,size > 0,size <= 8*1024*1024,let hash = t["sha256"] as? String,hash.range(of:"^[0-9a-f]{64}$",options:.regularExpression) != nil else { throw fail("Invalid GPD catalog entry \(id).") }
-                clean[id] = ["name":t["name"] as? String ?? "","achievements":t["achievements"] as? Int ?? 0,"gamerscore":t["gamerscore"] as? Int ?? 0,"bytes":size,"sha256":hash]
+                guard validTitle(id),let size = t["bytes"] as? Int,size > 0,size <= 8*1024*1024,let hash = t["sha256"] as? String,hash.range(of:"^[0-9a-f]{64}$",options:.regularExpression) != nil,
+                  let release = t["release"] as? String,release.range(of:"^gpd-catalog-[1-9][0-9]{0,3}$",options:.regularExpression) != nil else { throw fail("Invalid GPD catalog entry \(id).") }
+                clean[id] = ["name":t["name"] as? String ?? "","achievements":t["achievements"] as? Int ?? 0,"gamerscore":t["gamerscore"] as? Int ?? 0,"bytes":size,"sha256":hash,"release":release]
             }
             return clean
         }
@@ -171,12 +172,12 @@ private struct Xbox360WebView: UIViewRepresentable {
                 guard let account = model.account else { throw fail("Connect an Xbox account in Settings first.") }
                 return ["rows":try await model.api.reference360(p["titleId"] as? String ?? "",gamertag:p["gamertag"] as? String ?? "",account:account)]
             case "gpdIndex":
-                do { let data = try await download("index.json",limit:4*1024*1024); catalog = try parseCatalog(data); try? data.write(to:catalogCache,options:.atomic) }
+                do { let data = try await download("gpd-catalog/index.json",limit:4*1024*1024); catalog = try parseCatalog(data); try? data.write(to:catalogCache,options:.atomic) }
                 catch { guard let data = try? Data(contentsOf:catalogCache) else { throw error }; catalog = try parseCatalog(data) }
                 return ["titles":catalog ?? [:],"contribute":model.gpdContribute]
             case "gpdFetch":
-                guard let title = p["titleId"] as? String,validTitle(title),let entry = catalog?[title],let size = entry["bytes"] as? Int,let expected = entry["sha256"] as? String else { throw fail("That title is not in the GPD catalog.") }
-                let data = try await download("\(title).gpd",limit:8*1024*1024)
+                guard let title = p["titleId"] as? String,validTitle(title),let entry = catalog?[title],let size = entry["bytes"] as? Int,let expected = entry["sha256"] as? String,let release = entry["release"] as? String else { throw fail("That title is not in the GPD catalog.") }
+                let data = try await download("\(release)/\(title).gpd",limit:8*1024*1024)
                 guard data.count == size,sha256(data) == expected else { throw fail("The downloaded GPD did not match the catalog checksum.") }
                 gpd = data; return ["length":data.count]
             case "gpdChunk":
