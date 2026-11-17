@@ -32,6 +32,31 @@ struct MythicShape: Shape {
 struct MythicMark: View {
     var body: some View { MythicShape().fill(Color(red:112/255,green:201/255,blue:138/255)).frame(width:20,height:20).accessibilityLabel("Mythic: base game complete") }
 }
+struct GameSupportBadge: View {
+    let titleID: String
+    @EnvironmentObject private var model: MobileModel
+
+    var body: some View {
+        let status = model.catalogue?.index[titleID]
+        let badge: (label: String, icon: String, color: Color)
+        if let status {
+            if status.reason != nil || status.count == 0 {
+                badge = ("Unsupported", "xmark.circle", .red)
+            } else if status.classification == "Supported" {
+                badge = ("Supported", "checkmark.circle", .green)
+            } else {
+                let label = status.classification == "Partially supported" ? "Partially supported" : "Testing"
+                badge = (label, "exclamationmark.triangle", .orange)
+            }
+        } else {
+            badge = ("Not checked", "questionmark.circle", .secondary)
+        }
+        return Label(badge.label, systemImage: badge.icon)
+            .font(.caption2.weight(.medium))
+            .foregroundStyle(badge.color)
+    }
+}
+
 struct GameHeader: View {
     let game: Game
     @EnvironmentObject var m: MobileModel
@@ -40,6 +65,7 @@ struct GameHeader: View {
             GameArt(url:game.image,size:56)
             VStack(alignment:.leading,spacing:4) {
                 Text(game.name).font(.headline).textSelection(.enabled)
+                GameSupportBadge(titleID: game.id)
                 Text(game.platforms.joined(separator:" / ")).font(.caption2).foregroundStyle(.secondary)
                 HStack(spacing:6) {
                     Text("\(game.unlocked)/\(game.total > 0 ? String(game.total) : "?") achievements").font(.caption)
@@ -58,6 +84,7 @@ struct LibraryGameRow: View {
             GameArt(url:game.image)
             VStack(alignment:.leading,spacing:4) {
                 Text(game.name).font(.subheadline.weight(.semibold)).lineLimit(2)
+                GameSupportBadge(titleID: game.id)
                 Text(game.platforms.joined(separator:" / ")).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
                 HStack(spacing:5) {
                     Text("\(game.unlocked)/\(game.total > 0 ? String(game.total) : "?")").font(.caption)
