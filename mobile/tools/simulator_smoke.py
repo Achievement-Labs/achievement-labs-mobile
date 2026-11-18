@@ -105,10 +105,17 @@ print('Sign-in WebKit media requires a tap; inline playback preferred; PiP and A
 subprocess.run(['xcrun','simctl','terminate',device,'org.achievementlabs.mobile'],check=True)
 print('Embedded WebKit automatic callback capture and full redirect validation passed without credentials or OAuth requests.')
 
-output=run('xcrun','simctl','launch',device,'org.achievementlabs.mobile','--ui-preview=queue','--background-self-test')
-time.sleep(12)
+# Wait for the completion marker rather than racing the app's ten-second
+# asynchronous test plus SwiftUI startup on a busy hosted simulator.
 container=Path(run('xcrun','simctl','get_app_container',device,'org.achievementlabs.mobile','data').strip())
-result=json.loads((container/'Documents'/'Background-self-test.json').read_text())
+marker=container/'Documents'/'Background-self-test.json'
+marker.unlink(missing_ok=True)
+output=run('xcrun','simctl','launch',device,'org.achievementlabs.mobile','--ui-preview=queue','--background-self-test')
+deadline=time.monotonic()+60
+while not marker.exists() and time.monotonic()<deadline:
+    time.sleep(1)
+assert marker.exists(), 'Background self-test did not finish within 60 seconds'
+result=json.loads(marker.read_text())
 assert result['available'] and result['finishedInactive'], 'Background request did not finish safely'
 assert result['manifestValid'], 'Background identifiers/modes missing from the built app'
 print('iOS 26 background API request completed or safely declined with no network: '+str(result))
