@@ -168,6 +168,11 @@ struct AchievementView: View {
                                     if row.unlocked { Image(systemName: "checkmark.circle.fill").foregroundStyle(.green).accessibilityLabel("Unlocked") }
                                 }
                                 HStack { Text("ID \(row.id) · \(row.score)G").font(.caption2).foregroundStyle(.secondary); Spacer(); Button(row.unlocked ? "Retry" : "Unlock") { Task { await m.unlock(row, game: game) } }.buttonStyle(.bordered).disabled(m.busy || m.running || m.unavailable(row, game: game) != nil) }
+                                if let mapped = m.eventMappingAvailable(row, game: game) {
+                                    Label(mapped ? "Mapped" : "Unsupported", systemImage: mapped ? "checkmark.seal" : "xmark.circle")
+                                        .font(.caption2.weight(.medium))
+                                        .foregroundStyle(mapped ? Color.green : Color.red)
+                                }
                                 if let reason = m.unavailable(row, game: game) { Text(reason).font(.caption2).foregroundStyle(.secondary) }
                                 if let result = m.rowResults[row.id] { Text(result).font(.caption).foregroundStyle(.orange) }
                             }.padding(.vertical,6)
