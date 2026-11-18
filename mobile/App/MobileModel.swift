@@ -327,6 +327,14 @@ final class NotificationPresentation: NSObject, UNUserNotificationCenterDelegate
             status = "Loaded \(loaded.count) achievements."
         } catch { self.error = error.localizedDescription }
     }
+    func eventMappingAvailable(_ row: Achievement, game: Game) -> Bool? {
+        guard row.eventBased, !game.legacy, let catalogue else { return nil }
+        guard let status = catalogue.index[game.id] else { return nil }
+        guard status.reason == nil else { return false }
+        guard let recipes = try? catalogue.recipes(game.id) else { return nil }
+        return recipes.recipes[row.id] != nil
+    }
+
     func unavailable(_ row: Achievement, game: Game) -> String? {
         if game.legacy { return "Xbox 360/GFWL achievements are read-only on mobile." }
         if row.eventBased {

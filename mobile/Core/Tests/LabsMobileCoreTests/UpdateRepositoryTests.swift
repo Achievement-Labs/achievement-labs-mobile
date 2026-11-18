@@ -18,7 +18,7 @@ private final class UpdateRepositoryProtocol: URLProtocol {
         let data: Data
         if request.url?.absoluteString == "https://api.github.com/repos/Achievement-Labs/achievement-labs-mobile/releases?per_page=100" { data = Data("[]".utf8) }
         else {
-            XCTAssertEqual(request.url?.absoluteString,"https://raw.githubusercontent.com/Achievement-Labs/achievement-labs/mobile-event-feed/catalogue.json")
+            XCTAssertEqual(request.url?.absoluteString,"https://raw.githubusercontent.com/Achievement-Labs/achievement-labs/mobile-event-feed/EventPack.json")
             data = Data(#"{"schemaVersion":1,"upstreamRelease":"v1.0.8","archiveSHA256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","generatedAt":"2026-10-23T00:00:00Z","titles":{}}"#.utf8)
         }
         client?.urlProtocol(self,didReceive:HTTPURLResponse(url:request.url!,statusCode:200,httpVersion:nil,headerFields:nil)!,cacheStoragePolicy:.notAllowed)

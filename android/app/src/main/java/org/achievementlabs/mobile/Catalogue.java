@@ -9,6 +9,20 @@ final class Catalogue {
  Catalogue(Context c)throws Exception{context=c;index=new JSONObject(asset("MobileIndex.json"));packs=new JSONObject(asset("achievement-packs.json")).getJSONArray("titles");JSONArray hubs=new JSONObject(asset("achievement-hubs.json")).getJSONArray("titles");for(int i=0;i<hubs.length();i++)packs.put(hubs.getJSONObject(i));}
  String asset(String path)throws Exception{try(InputStream in=context.getAssets().open("catalogue/"+path);ByteArrayOutputStream b=new ByteArrayOutputStream()){byte[] buf=new byte[8192];int n;while((n=in.read(buf))!=-1)b.write(buf,0,n);return Core.text(b.toByteArray());}}
  boolean matches(JSONObject game,JSONObject definition){JSONArray platforms=definition.optJSONArray("platforms"),devices=game.optJSONArray("devices");if(platforms==null||platforms.length()==0)return true;if(devices==null)return false;for(int i=0;i<platforms.length();i++)for(int x=0;x<devices.length();x++)if(platforms.optString(i).equals(devices.optString(x)))return true;return false;}
+ JSONObject displaySupport() throws JSONException {
+  JSONObject support = new JSONObject();
+  for (Iterator<String> ids = index.keys(); ids.hasNext();) {
+   String id = ids.next();
+   JSONObject status = index.getJSONObject(id);
+   String label = !status.isNull("reason") || status.optInt("count") == 0
+       ? "Unsupported" : status.optString("classification", "Testing");
+   support.put(id, label);
+  }
+  for (Iterator<String> ids = synced.keys(); ids.hasNext();) {
+   support.put(ids.next(), "Testing");
+  }
+  return support;
+ }
  boolean mapped(String title,String id){try{return recipes(title).has(id);}catch(Exception e){return false;}}
  JSONObject recipes(String title)throws Exception{Core.numeric(title);if(synced.has(title))return synced.getJSONObject(title).getJSONObject("recipes").getJSONObject("recipes");JSONObject status=index.optJSONObject(title);if(status==null||!status.isNull("reason"))throw new Exception("No supported event mapping for this edition.");return new JSONObject(asset("Events/"+title+".mapping.json")).getJSONObject("recipes");}
  List<String> payloads(String title,String id,String xuid)throws Exception{return Core.payloads(synced.has(title)?synced.getJSONObject(title).getString("template"):asset("Events/"+title+".json"),recipes(title).getJSONArray(id),title,xuid,System.currentTimeMillis());}

@@ -58,6 +58,7 @@ struct FindGamesView: View {
                         } label: {
                             VStack(alignment:.leading,spacing:4) {
                                 Text(game.name).foregroundStyle(.primary)
+                                GameSupportBadge(titleID: game.id)
                                 Text("Title ID \(game.id) · \(game.platforms.isEmpty ? "Platform unavailable" : game.platforms.joined(separator:" / "))").font(.caption).foregroundStyle(.secondary)
                             }
                         }.disabled(opening || m.busy || m.account == nil)

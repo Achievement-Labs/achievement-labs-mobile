@@ -26,3 +26,8 @@ input,select{background:#0b1d23;color:#f1f7f5;border-color:#405459}input[type=ra
 @media(prefers-reduced-transparency:reduce){.card,header,nav,.tabs{background:#14262c;backdrop-filter:none;-webkit-backdrop-filter:none}}
 
 body{isolation:isolate;min-height:100vh}
+
+.game-support { display: block; font-weight: 600; }
+.game-support.supported { color: #86d7ac; }
+.game-support.partial { color: #ffcb78; }
+.game-support.unsupported { color: #ff8b8b; }

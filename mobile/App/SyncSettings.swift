@@ -50,7 +50,7 @@ struct SyncSettings: View {
                 Text("Click the mobile icon on PC. Select full sign-in, sign-in only, or event-token-only QR. Transfers expire after 10 minutes; encrypted file import remains available.").font(.caption2).foregroundStyle(.secondary)
             }.listRowBackground(LabsGlassSurface())
             Section("Event data sync") {
-                Toggle("Sync new event games automatically",isOn:$m.autoSyncEvents)
+                Toggle("Sync missing event games automatically",isOn:$m.autoSyncEvents)
                 Button("Sync event data now") { Task { await m.syncEvents() } }.disabled(m.eventsSyncing || m.running)
                 Button("Import event pack JSONâ€¦",systemImage:"square.and.arrow.down") { importingEvents = true }.disabled(m.eventsSyncing || m.running)
                 Text(m.eventSyncStatus).font(.caption).foregroundStyle(.secondary)
