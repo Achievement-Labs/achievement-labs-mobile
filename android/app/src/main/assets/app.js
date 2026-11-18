@@ -58,6 +58,9 @@ function visibleAchievements(){let list=rows.filter(r=>state.prefs.achievementFi
  if(order==='Gamerscore ↓'||order==='Gamerscore ↑'){const points=r=>+(r.rewards||[]).find(x=>x.type==='Gamerscore')?.value||0;list.sort((a,b)=>(order==='Gamerscore ↓'?-1:1)*(points(a)-points(b))||compare(a.name,b.name));}return list;
 }
 function achievementMappingBadge(row) {
+  if (row.eventMappingAvailable === null) {
+    return '<small class="game-support unknown"><span aria-hidden="true">?</span> Not checked</small>';
+  }
   if (typeof row.eventMappingAvailable !== 'boolean') return '';
   return row.eventMappingAvailable
     ? '<small class="game-support supported"><span aria-hidden="true">✓</span> Mapped</small>'

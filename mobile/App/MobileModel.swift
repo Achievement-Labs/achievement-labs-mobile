@@ -329,7 +329,7 @@ final class NotificationPresentation: NSObject, UNUserNotificationCenterDelegate
     }
     func eventMappingAvailable(_ row: Achievement, game: Game) -> Bool? {
         guard row.eventBased, !game.legacy, let catalogue else { return nil }
-        guard let status = catalogue.index[game.id] else { return false }
+        guard let status = catalogue.index[game.id] else { return nil }
         guard status.reason == nil else { return false }
         guard let recipes = try? catalogue.recipes(game.id) else { return nil }
         return recipes.recipes[row.id] != nil
