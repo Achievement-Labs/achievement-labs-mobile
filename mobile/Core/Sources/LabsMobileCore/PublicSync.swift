@@ -52,7 +52,7 @@ public struct PublicSync {
         return data
     }
     public func events() async throws -> EventFeed {
-        let data = try await get("https://raw.githubusercontent.com/Achievement-Labs/achievement-labs/mobile-event-feed/catalogue.json",limit:32*1024*1024)
+        let data = try await get("https://raw.githubusercontent.com/Achievement-Labs/achievement-labs/mobile-event-feed/EventPack.json",limit:32*1024*1024)
         return try JSONDecoder().decode(EventFeed.self,from:data)
     }
     public func searchTitles(_ input: String) async throws -> [Game] {

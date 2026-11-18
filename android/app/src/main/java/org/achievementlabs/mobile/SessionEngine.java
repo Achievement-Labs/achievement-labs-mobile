@@ -2,7 +2,7 @@ package org.achievementlabs.mobile;
 import android.app.*;import android.os.*;import android.content.*;import org.json.*;
 import java.util.*;import java.util.concurrent.*;import java.io.*;import java.time.*;import java.lang.ref.WeakReference;
 final class SessionEngine extends ContextWrapper {
- static final String EVENT_FEED="https://raw.githubusercontent.com/Achievement-Labs/achievement-labs/mobile-event-feed/catalogue.json";
+ static final String EVENT_FEED="https://raw.githubusercontent.com/Achievement-Labs/achievement-labs/mobile-event-feed/EventPack.json";
  final Handler main=new Handler(Looper.getMainLooper());volatile WeakReference<MainActivity> screen=new WeakReference<>(null);
  Vault vault;Catalogue catalogue;JSONObject disk=new JSONObject(),account,prefs=new JSONObject(),pending;JSONObject savedQueues=new JSONObject();JSONArray previousQueue=new JSONArray();JSONArray games=new JSONArray(),queue=new JSONArray();
  final Map<String,JSONObject> foundTitles=new LinkedHashMap<>();
